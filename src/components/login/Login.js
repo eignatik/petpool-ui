@@ -18,16 +18,21 @@ class Login extends Component {
     // Should also implement handlers: success and error
     e.preventDefault();
 
-    fetch(RestUtil.url("auth/login"), {
+    fetch(RestUtil.url("token/request"), {
       method: "POST",
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       body: {
-        email: e.currentTarget[0].value,
+        name: e.currentTarget[0].value,
         password: e.currentTarget[1].value
       }
+    }).then(data => {
+      const accessToken = data && data["accessToken"];
+      const refreshToken = data && data["refreshToken"];
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
     });
   }
 
