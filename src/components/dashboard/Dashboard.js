@@ -12,15 +12,23 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
-    fetch("http://localhost:3000/health")
+    fetch(RestUtil.url("health"))
     .then(result => {
       console.log(result);
       return result.json();
     }).then(data => {
+      const status = data && data["status"];
       let applicationUp = data && data["applicationStatus"];
+      let result;
+      if (status === 401) {
+        result = "Server responded with unauthorized error: " + status;
+      } else {
+        result = applicationUp? "Server is up & running" : "Server isn't"
+            + " responsing";
+      }
+
     console.log(data);
-      this.setState({serverStatus: applicationUp ?
-            "Server is up and running" : "Server isn't responding"});
+      this.setState({serverStatus: result});
 
     })
   }
