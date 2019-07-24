@@ -31,7 +31,7 @@ class SignUp extends Component {
               </Form.Group>
               <Form.Group widths={'equal'}>
                 <Form.Field required='true'>
-                  <label>Enter a password</label>
+                  <label>Enter your email</label>
                   <Input iconPosition='left' type='email' placeholder='Email'>
                     <Icon name='at'/>
                     <input/>
