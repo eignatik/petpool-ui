@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Segment} from "semantic-ui-react";
+import {Message, Segment} from "semantic-ui-react";
 import {RestUtil} from "../../util/RestUtil";
 
 class Dashboard extends Component {
@@ -9,6 +9,16 @@ class Dashboard extends Component {
     this.state = {
       serverStatus: ""
     }
+  }
+
+  checkUser() {
+    let accessKey = localStorage.getItem("accessToken");
+    let refreshKey = localStorage.getItem("refreshToken");
+    if (!!refreshKey && !!accessKey) {
+      return 'Welcome back!';
+
+    }
+    return "";
   }
 
   componentDidMount() {
@@ -27,15 +37,20 @@ class Dashboard extends Component {
             + " responsing";
       }
 
-    console.log(data);
-      this.setState({serverStatus: result});
+    let messageForUser = this.checkUser();
 
+    console.log(data);
+      this.setState({
+        serverStatus: result,
+        userMessage: messageForUser
+      });
     })
   }
 
   render() {
     return (
         <Segment>
+          {this.state.userMessage}
           <h1>Dashboard page</h1>
           <h2>Test user name: {RestUtil.getUser()["name"]}</h2>
           <h2>Checking connection to server: {this.state.serverStatus} </h2>

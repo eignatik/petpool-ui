@@ -18,21 +18,30 @@ class Login extends Component {
     // Should also implement handlers: success and error
     e.preventDefault();
 
+    const data = {
+      email: e.currentTarget[0].value,
+      password: e.currentTarget[1].value
+    };
+
     fetch(RestUtil.url("token/request"), {
       method: "POST",
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: {
-        name: e.currentTarget[0].value,
-        password: e.currentTarget[1].value
-      }
-    }).then(data => {
-      const accessToken = data && data["accessToken"];
-      const refreshToken = data && data["refreshToken"];
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      body: JSON.stringify(data)
+    }).then(response => response.json())
+    .then(responseJson => {
+      localStorage.setItem("accessToken", responseJson["accessToken"]);
+      localStorage.setItem("expired", responseJson["expired"]);
+      localStorage.setItem("refreshToken", responseJson["refreshToken"]);
+    })
+    .then(() => {
+      console.log(window.location.href);
+      window.location.href = "/dashboard";
+      console.log(window.location.href);
+    }).catch(error => {
+      console.log(error);
     });
   }
 
@@ -48,7 +57,7 @@ class Login extends Component {
                 <Form onSubmit={this.logIn} method={'POST'}>
                   <Form.Group widths={'equal'}>
                     <Form.Field required='true'>
-                      <Input iconPosition='left' type='email' placeholder='Email or login'>
+                      <Input iconPosition='left' placeholder='Email or login' value={'user@test.test'}>
                         <Icon name='at'/>
                         <input/>
                       </Input>
@@ -56,7 +65,7 @@ class Login extends Component {
                   </Form.Group>
                   <Form.Group widths={'equal'}>
                     <Form.Field required='true'>
-                      <Input iconPosition='left' type='password' placeholder='****'>
+                      <Input iconPosition='left' type='password' placeholder='****' value={'123'}>
                         <Icon name='key'/>
                         <input/>
                       </Input>
