@@ -7,7 +7,8 @@ class Dashboard extends Component {
   constructor() {
     super();
     this.state = {
-      serverStatus: ""
+      serverStatusResult: "",
+      serverStatusMessage: "Wait, please..."
     }
   }
 
@@ -25,23 +26,23 @@ class Dashboard extends Component {
     fetch(RestUtil.url("health"))
     .then(result => {
       console.log(result);
+
+      let status = result.status;
+      let isSuccessful = /^2/.test(status);
+      this.setState({
+        serverStatusMessage: `Response ${(isSuccessful ? "" : "ERROR")} code is ${status} (${result.statusText}). `
+      });
+
       return result.json();
     }).then(data => {
-      const status = data && data["status"];
-      let applicationUp = data && data["applicationStatus"];
-      let result;
-      if (status === 401) {
-        result = "Server responded with unauthorized error: " + status;
-      } else {
-        result = applicationUp? "Server is up & running" : "Server isn't"
-            + " responsing";
-      }
+      let applicationUp = data && data["payload"] && data["payload"]["applicationStatus"];
+      let result = `Server is${(applicationUp? " up & running" : "n't responsing")}`;
 
-    let messageForUser = this.checkUser();
+      let messageForUser = this.checkUser();
 
-    console.log(data);
+      console.log(data);
       this.setState({
-        serverStatus: result,
+        serverStatusResult: result,
         userMessage: messageForUser
       });
     })
@@ -53,7 +54,7 @@ class Dashboard extends Component {
           {this.state.userMessage}
           <h1>Dashboard page</h1>
           <h2>Test user name: {RestUtil.getUser()["name"]}</h2>
-          <h2>Checking connection to server: {this.state.serverStatus} </h2>
+          <h2>Checking connection to server: {this.state.serverStatusMessage} {this.state.serverStatusResult}</h2>
         </Segment>
         );
   }
