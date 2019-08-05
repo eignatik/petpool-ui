@@ -5,7 +5,7 @@ import {
   Form,
   Grid, Header,
   Icon,
-  Input,
+  Input, Message,
   Segment
 } from "semantic-ui-react";
 import {Link} from "react-router-dom";
@@ -13,9 +13,37 @@ import {RestUtil} from "../../util/RestUtil";
 
 class Login extends Component {
 
+  constructor() {
+    super();
+    this.state = {
+      error: {}
+    };
+    this.logIn = this.logIn.bind(this);
+  }
+
+  getError() {
+    console.log(this.state.error);
+    if (this.state.error["message"]) {
+      let type = this.state.error["type"];
+      let details;
+      switch (type) {
+        case RestUtil.ERROR_TYPE.ACCESS_DENIED:
+          details = `Given credentials are not correct. Please try to enter correct credentials.`;
+          break;
+        default:
+          details = `Authorization just didn't work, we are sorry. Probably something went wrong. Try again or contact a support`;
+      }
+      return (
+          <Message negative>
+            <Message.Header>{this.state.error["message"]}</Message.Header>
+            <p>{details}</p>
+          </Message>
+      );
+    }
+    return null;
+  }
+
   logIn(e) {
-    // TODO: implement login
-    // Should also implement handlers: success and error
     e.preventDefault();
 
     const data = {
@@ -32,14 +60,22 @@ class Login extends Component {
       body: JSON.stringify(data)
     }).then(response => response.json())
     .then(responseJson => {
-      localStorage.setItem("accessToken", responseJson["accessToken"]);
-      localStorage.setItem("expired", responseJson["expired"]);
-      localStorage.setItem("refreshToken", responseJson["refreshToken"]);
+      localStorage.setItem("accessToken",
+          responseJson["payload"]["accessToken"]);
+      localStorage.setItem("expired", responseJson["payload"]["expired"]);
+      localStorage.setItem("refreshToken",
+          responseJson["payload"]["refreshToken"]);
+      return responseJson["error"];
     })
-    .then(() => {
-      console.log(window.location.href);
-      window.location.href = "/dashboard";
-      console.log(window.location.href);
+    .then((errorPresent) => {
+      console.log(errorPresent);
+      if (!errorPresent) {
+        RestUtil.redirect("/dashboard");
+      } else {
+        this.setState({
+          error: errorPresent
+        })
+      }
     }).catch(error => {
       console.log(error);
     });
@@ -57,7 +93,7 @@ class Login extends Component {
                 <Form onSubmit={this.logIn} method={'POST'}>
                   <Form.Group widths={'equal'}>
                     <Form.Field required='true'>
-                      <Input iconPosition='left' placeholder='Email or login' value={'user@test.test'}>
+                      <Input iconPosition='left' placeholder='Email or login'>
                         <Icon name='at'/>
                         <input/>
                       </Input>
@@ -65,19 +101,21 @@ class Login extends Component {
                   </Form.Group>
                   <Form.Group widths={'equal'}>
                     <Form.Field required='true'>
-                      <Input iconPosition='left' type='password' placeholder='****' value={'123'}>
+                      <Input iconPosition='left' type='password'
+                             placeholder='****' value={'123'}>
                         <Icon name='key'/>
                         <input/>
                       </Input>
                     </Form.Field>
                   </Form.Group>
                   <Button primary type='submit'>Log In</Button>
+                  {this.getError()}
                 </Form>
               </Grid.Column>
 
               <Grid.Column>
                 <Header icon>
-                  <Icon name='user plus' />
+                  <Icon name='user plus'/>
                   Don't have an account?
                 </Header>
                 <Link to={'/signup'}>
