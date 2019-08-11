@@ -39,4 +39,12 @@ export class RestUtil {
     }
   }
 
+  static checkUniqueByUserName(func) {
+    func(false); //fake
+  }
+
+  static checkUniqueByEmail(func) {
+    func(false); //fake
+  }
+
 }

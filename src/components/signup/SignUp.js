@@ -73,7 +73,38 @@ class SignUp extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleBlur = this.handleBlur.bind(this);
     this.signUp = this.signUp.bind(this);
+  }
+
+  setError(name, value) {
+     let updatedObject = this.getInnerErrors();
+     switch(name) {
+       case 'userName':
+         updatedObject[name].userNameNotUnique = value;
+         break;
+       case 'email':
+         updatedObject[name].emailNotUnique = value;
+         break;
+     }
+     this.setState({errors: updatedObject});
+  }
+
+  handleBlur(e) {
+    let name = e.target.name;
+    let value = e.target.value;
+
+    if(value == null || value.length === 0 || this.hasError(name))
+      return;
+
+    switch(name) {
+      case 'userName':
+        RestUtil.checkUniqueByUserName(result => this.setError(name, result));
+        break;
+      case 'email':
+        RestUtil.checkUniqueByEmail(result => this.setError(name, result));
+        break;
+    }
   }
 
   handleChange(e, d) {
@@ -144,7 +175,7 @@ class SignUp extends Component {
       && !/^([A-Za-zА-Яа-я0-9])([A-Za-zА-Яа-я0-9_\.]+)([A-Za-zА-Яа-я0-9])$/.test(value);
   }
 
-  checkPasswordNotConfirmed(value, original) {console.log(value + " " + original)
+  checkPasswordNotConfirmed(value, original) {
      return value != original;
   }
 
@@ -206,6 +237,7 @@ class SignUp extends Component {
                   name="userName"
                   value={this.state.person.userName}
                   onChange={this.handleChange}
+                  onBlur={this.handleBlur}
                   error={this.hasError("userName")} />
               </Form.Group>
               {this.displayErrorMessage("userName")}
@@ -218,6 +250,7 @@ class SignUp extends Component {
                   name="email"
                   value={this.state.person.email}
                   onChange={this.handleChange}
+                  onBlur={this.handleBlur}
                   error={this.hasError("email")} />
               </Form.Group>
               {this.displayErrorMessage("email")}
@@ -293,7 +326,7 @@ class SignUp extends Component {
                 </Form.Field>
                 <Form.Field>
                   <Form.Input
-                    required error={true}
+                    required
                     label="City"
                     type="text"
                     placeholder='Enter your city'
