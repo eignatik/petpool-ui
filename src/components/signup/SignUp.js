@@ -1,9 +1,16 @@
 import React, {Component} from 'react';
-import {Form, Segment, Input, Icon, Button, Divider, Dropdown, Message} from "semantic-ui-react";
-import {RestUtil} from "../../util/RestUtil";
-import {COUNTRIES} from '../../constants';
+import {Form, Segment, Button, Divider, Message} from "semantic-ui-react";
+import {ValidationUtil} from "../../util/ValidationUtil";
+import {Country} from "../../constants/Country";
 
-const ERROR_TYPE = {
+const USERNAME = "userName";
+const EMAIL = "email";
+const PASSWORD = "password";
+const CONFIRMED_PASSWORD = "confirmedPassword";
+const FIRST_NAME = "firstName";
+const LAST_NAME = "lastName";
+
+const ERROR_MESSAGES = {
   isEmpty: "Element is empty",
   lessThanThreeLetters: "This userName must be more than 3 symbols",
   moreThanTwentyLetters: "This userName must be less than 20 symbols",
@@ -19,10 +26,13 @@ class SignUp extends Component {
   constructor(props) {
     super(props);
 
-    let Russia = COUNTRIES.find(x => x.key === 'ru');
-    let defaultCountry = Russia == null ? COUNTRIES[0].value : Russia.value;
+    let countriesList = Country.getCountriesForDropDownUi();
+
+    let Russia = countriesList.find(x => x.key === "ru");
+    let defaultCountry = Russia == null ? countriesList[0].value : Russia.value;
 
     this.state = {
+      countries: countriesList,
       person: {
         userName: '',
         email: '',
@@ -80,36 +90,38 @@ class SignUp extends Component {
   setError(name, value) {
      let updatedObject = this.getInnerErrors();
      switch(name) {
-       case 'userName':
+       case USERNAME:
          updatedObject[name].userNameNotUnique = value;
          break;
-       case 'email':
+       case EMAIL:
          updatedObject[name].emailNotUnique = value;
          break;
+       default: break;
      }
      this.setState({errors: updatedObject});
   }
 
-  handleBlur(e) {
-    let name = e.target.name;
-    let value = e.target.value;
+  handleBlur(event) {
+    let name = event.target.name;
+    let value = event.target.value;
 
     if(value == null || value.length === 0 || this.hasError(name))
       return;
 
     switch(name) {
-      case 'userName':
-        RestUtil.checkUniqueByUserName(result => this.setError(name, result));
+      case USERNAME:
+        ValidationUtil.checkUniqueByUserName(result => this.setError(name, result));
         break;
-      case 'email':
-        RestUtil.checkUniqueByEmail(result => this.setError(name, result));
+      case EMAIL:
+        ValidationUtil.checkUniqueByEmail(result => this.setError(name, result));
         break;
+      default: break;
     }
   }
 
-  handleChange(e, d) {
-    let name = d.name;
-    let value = d.value;
+  handleChange(event, object) {
+    let name = object.name;
+    let value = object.value;
 
     if(name == null)
       return;
@@ -118,65 +130,36 @@ class SignUp extends Component {
      ...this.state.person
     };
 
-    let updatedProperty = {
-      ...updatedObject[name]
-    };
-
-    updatedProperty = value;
-    updatedObject[name] = updatedProperty;
+    updatedObject[name] = value;
 
     this.setState({person: updatedObject}, () => { this.validateProperty(name, value)});
   }
 
   validateProperty(name, value) {
     let updatedObject = this.getInnerErrors();
-    updatedObject[name].isEmpty = this.checkElementIsEmpty(value);
+    updatedObject[name].isEmpty = ValidationUtil.checkElementIsEmpty(value);
 
     switch(name) {
-      case 'userName':
-        updatedObject[name].lessThanThreeLetters = this.checkElementIsTooShort(value, 3);
-        updatedObject[name].moreThanTwentyLetters = this.checkElementIsTooLong(value, 20);
-        updatedObject[name].hasIncorrectUserNameSymbols = this.checkUserNameHasIncorrectSymbols(value);
+      case USERNAME:
+        updatedObject[name].lessThanThreeLetters = ValidationUtil.checkElementIsTooShort(value, 3);
+        updatedObject[name].moreThanTwentyLetters = ValidationUtil.checkElementIsTooLong(value, 20);
+        updatedObject[name].hasIncorrectUserNameSymbols = ValidationUtil.checkUserNameHasIncorrectSymbols(value);
         break;
-      case 'password':
-        updatedObject['password'].notConfirmed = this.checkPasswordNotConfirmed(value, this.state.person.confirmedPassword);
-        updatedObject['confirmedPassword'].notConfirmed = this.checkPasswordNotConfirmed(value, this.state.person.confirmedPassword);
+      case PASSWORD:
+        updatedObject[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
+        updatedObject[CONFIRMED_PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
         break;
-      case 'confirmedPassword':
-        updatedObject['password'].notConfirmed = this.checkPasswordNotConfirmed(value, this.state.person.password);
-        updatedObject['confirmedPassword'].notConfirmed = this.checkPasswordNotConfirmed(value, this.state.person.password);
+      case CONFIRMED_PASSWORD:
+        updatedObject[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.password);
+        updatedObject[CONFIRMED_PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.password);
         break;
-      case 'firstName':
-      case 'lastName':
-        updatedObject[name].hasIncorrectPersonNameSymbols = this.checkElementIsNotOnlyAlphabet(value);
+      case FIRST_NAME:
+      case LAST_NAME:
+        updatedObject[name].hasIncorrectPersonNameSymbols = ValidationUtil.checkUserNameOnlyAlphabet(value);
         break;
+      default: break;
     }
     this.setState({errors: updatedObject, isNotValid: Object.values(updatedObject).some(x => Object.values(x).some(y => y)) || this.hasFormError()});
-  }
-
-  checkElementIsEmpty(value) {
-    return value == null || value.length === 0;
-  }
-
-  checkElementIsTooShort(value, len) {
-     return value == null || value.length < len;
-  }
-
-  checkElementIsTooLong(value, len) {
-     return value == null || value.length > len;
-  }
-
-  checkElementIsNotOnlyAlphabet(value) {
-     return !/^[A-Za-zА-Яа-я]+$/.test(value);
-  }
-
-  checkUserNameHasIncorrectSymbols(value) {
-    return value != null && value.length > 2
-      && !/^([A-Za-zА-Яа-я0-9])([A-Za-zА-Яа-я0-9_\.]+)([A-Za-zА-Яа-я0-9])$/.test(value);
-  }
-
-  checkPasswordNotConfirmed(value, original) {
-     return value != original;
   }
 
   getInnerErrors() {
@@ -188,21 +171,21 @@ class SignUp extends Component {
   }
 
   hasFormError() {
-    let t = [this.checkElementIsEmpty(this.state.person.userName), this.checkElementIsEmpty(this.state.person.email),
-      this.checkElementIsEmpty(this.state.person.firstName), this.checkElementIsEmpty(this.state.person.lastName),
-      this.checkElementIsEmpty(this.state.person.city),
-      this.checkElementIsEmpty(this.state.person.password), this.checkElementIsEmpty(this.state.person.confirmedPassword),
-      this.checkPasswordNotConfirmed(this.state.person.password, this.state.person.confirmedPassword),
-      this.checkElementIsTooShort(this.state.person.userName, 3), this.checkElementIsTooLong(this.state.person.userName, 20),
-      this.checkUserNameHasIncorrectSymbols(this.state.person.userName),
-      this.checkElementIsNotOnlyAlphabet(this.state.person.firstName), this.checkElementIsNotOnlyAlphabet(this.state.person.lastName)];
-      return t.some(x => x);
+    let validations = [ValidationUtil.checkElementIsEmpty(this.state.person.userName), ValidationUtil.checkElementIsEmpty(this.state.person.email),
+      ValidationUtil.checkElementIsEmpty(this.state.person.firstName), ValidationUtil.checkElementIsEmpty(this.state.person.lastName),
+      ValidationUtil.checkElementIsEmpty(this.state.person.city),
+      ValidationUtil.checkElementIsEmpty(this.state.person.password), ValidationUtil.checkElementIsEmpty(this.state.person.confirmedPassword),
+      ValidationUtil.checkElementsIsMatched(this.state.person.password, this.state.person.confirmedPassword),
+      ValidationUtil.checkElementIsTooShort(this.state.person.userName, 3), ValidationUtil.checkElementIsTooLong(this.state.person.userName, 20),
+      ValidationUtil.checkUserNameHasIncorrectSymbols(this.state.person.userName),
+      ValidationUtil.checkUserNameOnlyAlphabet(this.state.person.firstName), ValidationUtil.checkUserNameOnlyAlphabet(this.state.person.lastName)];
+    return validations.some(x => x);
   }
 
   displayErrorMessageForm(element) {
     for(var prop in element) {
       if(element[prop])
-        return (<li>{ERROR_TYPE[prop]}</li>);
+        return (<li>{ERROR_MESSAGES[prop]}</li>);
     }
   }
 
@@ -319,7 +302,7 @@ class SignUp extends Component {
                     name="country"
                     search
                     selection
-                    options={COUNTRIES}
+                    options={this.state.countries}
                     value={this.state.person.country}
                     onChange={this.handleChange}
                     error={this.hasError("country")} />

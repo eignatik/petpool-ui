@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Message, Segment} from "semantic-ui-react";
+import {Segment} from "semantic-ui-react";
 import {RestUtil} from "../../util/RestUtil";
 
 class Dashboard extends Component {

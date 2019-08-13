@@ -38,13 +38,4 @@ export class RestUtil {
       "country": "RU",
     }
   }
-
-  static checkUniqueByUserName(func) {
-    func(false); //fake
-  }
-
-  static checkUniqueByEmail(func) {
-    func(false); //fake
-  }
-
 }
