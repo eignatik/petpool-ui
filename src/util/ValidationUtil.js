@@ -4,19 +4,21 @@ const LOGIN = "login";
 const EMAIL = "email";
 const UNIQUE_USERNAME = "uniqueUserName";
 const UNIQUE_EMAIL = "uniqueEmail";
+const MIN_LENGTH_USERNAME = 6;
+const MAX_LENGTH_USERNAME = 20;
 
 export class ValidationUtil {
 
   static checkElementIsEmpty(value) {
-    return value == null || value.length === 0;
+    return !value;
   }
 
-  static checkElementIsTooShort(value, len) {
-     return value == null || value.length < len;
+  static checkUserNameIsTooShort(value) {
+     return !!value && value.length < MIN_LENGTH_USERNAME;
   }
 
-  static checkElementIsTooLong(value, len) {
-     return value == null || value.length > len;
+  static checkUserNameIsTooLong(value, len) {
+     return !!value && value.length > MAX_LENGTH_USERNAME;
   }
 
   static checkUserNameOnlyAlphabet(value) {
@@ -24,8 +26,12 @@ export class ValidationUtil {
   }
 
   static checkUserNameHasIncorrectSymbols(value) {
-    return value != null && value.length > 2
+    return !!value && value.length >= MIN_LENGTH_USERNAME
       && !/^([A-Za-z0-9])([A-Za-z0-9_\.]+)([A-Za-z0-9])$/.test(value);
+  }
+
+  static checkEmailIsValid(value) {
+    return !/(.+)@(.+){2,}\.(.+){2,}/.test(value);
   }
 
   static checkElementsIsMatched(value, original) {

@@ -12,7 +12,8 @@ const LAST_NAME = "lastName";
 
 const ERROR_MESSAGES = {
   isEmpty: "Element is empty",
-  lessThanThreeLetters: "This userName must be more than 3 symbols",
+  emailHasError: "Email is not valid",
+  lessThanSixLetters: "This userName must be more than 6 symbols",
   moreThanTwentyLetters: "This userName must be less than 20 symbols",
   hasIncorrectUserNameSymbols: "This field must be consisted of english, russian letters, dot or hyphen; First and last symbols must be only letter",
   hasIncorrectPersonNameSymbols: "This field must be consisted of english or russian letters",
@@ -46,13 +47,14 @@ class SignUp extends Component {
       errors: {
         userName: {
           isEmpty: false,
-          lessThanThreeLetters: false,
+          lessThanSixLetters: false,
           moreThanTwentyLetters: false,
           hasIncorrectUserNameSymbols: false,
           userNameIsTaken: false
         },
         email: {
           isEmpty: false,
+          emailHasError: false,
           emailIsTaken: false
         },
         password: {
@@ -87,22 +89,22 @@ class SignUp extends Component {
   }
 
   setError(name, value) {
-     let updatedObject = this.getInnerErrors();
+     let errors = this.getInnerErrors();
      switch(name) {
        case USERNAME:
-         updatedObject[name].userNameIsTaken = !value;
+         errors[name].userNameIsTaken = !value;
          break;
        case EMAIL:
-         updatedObject[name].emailIsTaken = !value;
+         errors[name].emailIsTaken = !value;
          break;
        default: break;
      }
-     this.setInnerErrors(updatedObject);
+     this.setInnerErrors(errors);
   }
 
-  handleChange(event, object) {
-    let name = object.name;
-    let value = object.value;
+  handleChange(event, formResult) {
+    let name = formResult.name;
+    let value = formResult.value;
 
     if(name == null)
       return;
@@ -117,44 +119,47 @@ class SignUp extends Component {
   }
 
   validateProperty(name, value) {
-    let updatedObject = this.getInnerErrors();
+    let errors = this.getInnerErrors();
     let isEmpty = ValidationUtil.checkElementIsEmpty(value);
-    updatedObject[name].isEmpty = isEmpty;
+    errors[name].isEmpty = isEmpty;
 
     switch(name) {
       case USERNAME:
-        let lessThanThreeLetters = ValidationUtil.checkElementIsTooShort(value, 3);
-        let moreThanTwentyLetters = ValidationUtil.checkElementIsTooLong(value, 20);
+        let lessThanSixLetters = ValidationUtil.checkUserNameIsTooShort(value);
+        let moreThanTwentyLetters = ValidationUtil.checkUserNameIsTooLong(value);
         let hasIncorrectUserNameSymbols = ValidationUtil.checkUserNameHasIncorrectSymbols(value);
 
-        updatedObject[name].lessThanThreeLetters = lessThanThreeLetters;
-        updatedObject[name].moreThanTwentyLetters = moreThanTwentyLetters;
-        updatedObject[name].hasIncorrectUserNameSymbols = hasIncorrectUserNameSymbols;
+        errors[name].lessThanSixLetters = lessThanSixLetters;
+        errors[name].moreThanTwentyLetters = moreThanTwentyLetters;
+        errors[name].hasIncorrectUserNameSymbols = hasIncorrectUserNameSymbols;
 
-        if(!isEmpty && !lessThanThreeLetters && !moreThanTwentyLetters && !hasIncorrectUserNameSymbols) {
+        if(!isEmpty && !lessThanSixLetters && !moreThanTwentyLetters && !hasIncorrectUserNameSymbols) {
           ValidationUtil.checkUniqueByUserName(value, result => this.setError(name, result));
         }
         break;
       case EMAIL:
-        if(!isEmpty) {
+        let emailIsIsValid = ValidationUtil.checkEmailIsValid(value);
+        errors[name].emailHasError = emailIsIsValid;
+
+        if(!isEmpty && !emailIsIsValid) {
           ValidationUtil.checkUniqueByEmail(value, result => this.setError(name, result));
         }
         break;
       case PASSWORD:
-        updatedObject[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
-        updatedObject[CONFIRMED_PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
+        errors[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
+        errors[CONFIRMED_PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
         break;
       case CONFIRMED_PASSWORD:
-        updatedObject[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.password);
-        updatedObject[CONFIRMED_PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.password);
+        errors[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.password);
+        errors[CONFIRMED_PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.password);
         break;
       case FIRST_NAME:
       case LAST_NAME:
-        updatedObject[name].hasIncorrectPersonNameSymbols = ValidationUtil.checkUserNameOnlyAlphabet(value);
+        errors[name].hasIncorrectPersonNameSymbols = ValidationUtil.checkUserNameOnlyAlphabet(value);
         break;
       default: break;
     }
-    this.setInnerErrors(updatedObject);
+    this.setInnerErrors(errors);
   }
 
   setInnerErrors(errors) {
@@ -172,10 +177,10 @@ class SignUp extends Component {
   hasFormError() {
     let validations = [ValidationUtil.checkElementIsEmpty(this.state.person.userName), ValidationUtil.checkElementIsEmpty(this.state.person.email),
       ValidationUtil.checkElementIsEmpty(this.state.person.firstName), ValidationUtil.checkElementIsEmpty(this.state.person.lastName),
-      ValidationUtil.checkElementIsEmpty(this.state.person.city),
+      ValidationUtil.checkElementIsEmpty(this.state.person.city), ValidationUtil.checkEmailIsValid(this.state.person.email),
       ValidationUtil.checkElementIsEmpty(this.state.person.password), ValidationUtil.checkElementIsEmpty(this.state.person.confirmedPassword),
       ValidationUtil.checkElementsIsMatched(this.state.person.password, this.state.person.confirmedPassword),
-      ValidationUtil.checkElementIsTooShort(this.state.person.userName, 3), ValidationUtil.checkElementIsTooLong(this.state.person.userName, 20),
+      ValidationUtil.checkUserNameIsTooShort(this.state.person.userName), ValidationUtil.checkUserNameIsTooLong(this.state.person.userName),
       ValidationUtil.checkUserNameHasIncorrectSymbols(this.state.person.userName),
       ValidationUtil.checkUserNameOnlyAlphabet(this.state.person.firstName), ValidationUtil.checkUserNameOnlyAlphabet(this.state.person.lastName)];
     return validations.some(x => x);
