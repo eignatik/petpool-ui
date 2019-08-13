@@ -17,8 +17,8 @@ const ERROR_MESSAGES = {
   hasIncorrectUserNameSymbols: "This field must be consisted of english, russian letters, dot or hyphen; First and last symbols must be only letter",
   hasIncorrectPersonNameSymbols: "This field must be consisted of english or russian letters",
   notConfirmed: "Passwords are not the same",
-  userNameNotUnique: "This userName is already used",
-  emailNotUnique: "This email is already used"
+  userNameIsTaken: "This userName is already used",
+  emailIsTaken: "This email is already used"
 };
 
 class SignUp extends Component {
@@ -49,11 +49,11 @@ class SignUp extends Component {
           lessThanThreeLetters: false,
           moreThanTwentyLetters: false,
           hasIncorrectUserNameSymbols: false,
-          userNameNotUnique: false
+          userNameIsTaken: false
         },
         email: {
           isEmpty: false,
-          emailNotUnique: false
+          emailIsTaken: false
         },
         password: {
           isEmpty: false,
@@ -83,7 +83,6 @@ class SignUp extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
-    this.handleBlur = this.handleBlur.bind(this);
     this.signUp = this.signUp.bind(this);
   }
 
@@ -91,32 +90,14 @@ class SignUp extends Component {
      let updatedObject = this.getInnerErrors();
      switch(name) {
        case USERNAME:
-         updatedObject[name].userNameNotUnique = value;
+         updatedObject[name].userNameIsTaken = !value;
          break;
        case EMAIL:
-         updatedObject[name].emailNotUnique = value;
+         updatedObject[name].emailIsTaken = !value;
          break;
        default: break;
      }
-     this.setState({errors: updatedObject});
-  }
-
-  handleBlur(event) {
-    let name = event.target.name;
-    let value = event.target.value;
-
-    if(value == null || value.length === 0 || this.hasError(name))
-      return;
-
-    switch(name) {
-      case USERNAME:
-        ValidationUtil.checkUniqueByUserName(result => this.setError(name, result));
-        break;
-      case EMAIL:
-        ValidationUtil.checkUniqueByEmail(result => this.setError(name, result));
-        break;
-      default: break;
-    }
+     this.setInnerErrors(updatedObject);
   }
 
   handleChange(event, object) {
@@ -137,13 +118,27 @@ class SignUp extends Component {
 
   validateProperty(name, value) {
     let updatedObject = this.getInnerErrors();
-    updatedObject[name].isEmpty = ValidationUtil.checkElementIsEmpty(value);
+    let isEmpty = ValidationUtil.checkElementIsEmpty(value);
+    updatedObject[name].isEmpty = isEmpty;
 
     switch(name) {
       case USERNAME:
-        updatedObject[name].lessThanThreeLetters = ValidationUtil.checkElementIsTooShort(value, 3);
-        updatedObject[name].moreThanTwentyLetters = ValidationUtil.checkElementIsTooLong(value, 20);
-        updatedObject[name].hasIncorrectUserNameSymbols = ValidationUtil.checkUserNameHasIncorrectSymbols(value);
+        let lessThanThreeLetters = ValidationUtil.checkElementIsTooShort(value, 3);
+        let moreThanTwentyLetters = ValidationUtil.checkElementIsTooLong(value, 20);
+        let hasIncorrectUserNameSymbols = ValidationUtil.checkUserNameHasIncorrectSymbols(value);
+
+        updatedObject[name].lessThanThreeLetters = lessThanThreeLetters;
+        updatedObject[name].moreThanTwentyLetters = moreThanTwentyLetters;
+        updatedObject[name].hasIncorrectUserNameSymbols = hasIncorrectUserNameSymbols;
+
+        if(!isEmpty && !lessThanThreeLetters && !moreThanTwentyLetters && !hasIncorrectUserNameSymbols) {
+          ValidationUtil.checkUniqueByUserName(value, result => this.setError(name, result));
+        }
+        break;
+      case EMAIL:
+        if(!isEmpty) {
+          ValidationUtil.checkUniqueByEmail(value, result => this.setError(name, result));
+        }
         break;
       case PASSWORD:
         updatedObject[PASSWORD].notConfirmed = ValidationUtil.checkElementsIsMatched(value, this.state.person.confirmedPassword);
@@ -159,7 +154,11 @@ class SignUp extends Component {
         break;
       default: break;
     }
-    this.setState({errors: updatedObject, isNotValid: Object.values(updatedObject).some(x => Object.values(x).some(y => y)) || this.hasFormError()});
+    this.setInnerErrors(updatedObject);
+  }
+
+  setInnerErrors(errors) {
+    this.setState({errors: errors, isNotValid: Object.values(errors).some(x => Object.values(x).some(y => y)) || this.hasFormError()});
   }
 
   getInnerErrors() {
@@ -220,7 +219,6 @@ class SignUp extends Component {
                   name="userName"
                   value={this.state.person.userName}
                   onChange={this.handleChange}
-                  onBlur={this.handleBlur}
                   error={this.hasError("userName")} />
               </Form.Group>
               {this.displayErrorMessage("userName")}
@@ -233,7 +231,6 @@ class SignUp extends Component {
                   name="email"
                   value={this.state.person.email}
                   onChange={this.handleChange}
-                  onBlur={this.handleBlur}
                   error={this.hasError("email")} />
               </Form.Group>
               {this.displayErrorMessage("email")}

@@ -38,4 +38,20 @@ export class RestUtil {
       "country": "RU",
     }
   }
+
+  static getUniqueBeforeSignUp(prmRequestName, prmResponseName, value, funcSuccess) {
+    axios.get(`/api/public/validate/unique/${prmRequestName}?${prmRequestName}=${value}`)
+    .then(response => {
+      if(!/^2/.test(response.status))
+        return;
+
+      let data = response.data;
+      let result = data && data["payload"] && data["payload"][[prmResponseName]];
+      funcSuccess(result);
+    })
+    .catch(error => {
+      console.log(`CheckUniqueBy${prmRequestName} ${error}`);
+      //funcError;
+    });
+  }
 }

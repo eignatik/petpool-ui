@@ -1,3 +1,10 @@
+import {RestUtil} from "./RestUtil";
+
+const LOGIN = "login";
+const EMAIL = "email";
+const UNIQUE_USERNAME = "uniqueUserName";
+const UNIQUE_EMAIL = "uniqueEmail";
+
 export class ValidationUtil {
 
   static checkElementIsEmpty(value) {
@@ -25,12 +32,11 @@ export class ValidationUtil {
      return value !== original;
   }
 
-  static checkUniqueByUserName(func) {
-    func(false); //fake
+  static checkUniqueByUserName(value, func) {
+    RestUtil.getUniqueBeforeSignUp(LOGIN, UNIQUE_USERNAME, value, func);
   }
 
-  static checkUniqueByEmail(func) {
-    func(false); //fake
+  static checkUniqueByEmail(value, func) {
+    RestUtil.getUniqueBeforeSignUp(EMAIL, UNIQUE_EMAIL, value, func);
   }
-
 }
