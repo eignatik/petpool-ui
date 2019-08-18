@@ -4,9 +4,12 @@ import {Link} from "react-router-dom";
 import Login from "../login/Login";
 import SignUp from "../signup/SignUp";
 import Dashboard from "../dashboard/Dashboard";
+import Header from "../layouts/Header";
 import {Route} from "react-router";
 
 const App = () => (
+  <div>
+    <Header/>
     <div className='ui container'>
       <Route path={'/login'} exact component={Login}/>
       <Route path={'/signup'} exact component={SignUp}/>
@@ -16,6 +19,7 @@ const App = () => (
       <Link to={'/signup'}>Sign Up</Link> <br/>
       <Link to={'/dashboard'}>User Info</Link>
     </div>
+  </div>
 );
 
 
