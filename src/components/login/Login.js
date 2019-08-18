@@ -10,6 +10,7 @@ import {
 } from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import {RestUtil} from "../../util/RestUtil";
+import {EMAIL_REGEX} from '../../util/Constants';
 
 class Login extends Component {
 
@@ -19,6 +20,7 @@ class Login extends Component {
       error: {}
     };
     this.logIn = this.logIn.bind(this);
+    this.getProcessedFieldData = this.getProcessedFieldData.bind(this);
   }
 
   getError() {
@@ -43,13 +45,24 @@ class Login extends Component {
     return null;
   }
 
+  getProcessedFieldData(login, password) {
+      if(login.match(EMAIL_REGEX)) {
+          return {
+              email: login,
+              name: '',
+              password: password
+          }
+      } else {
+          return {
+              email: '',
+              name: login,
+              password: password
+          }
+      }
+  }
+
   logIn(e) {
     e.preventDefault();
-
-    const data = {
-      email: e.currentTarget[0].value,
-      password: e.currentTarget[1].value
-    };
 
     fetch(RestUtil.url("token/request"), {
       method: "POST",
@@ -57,7 +70,7 @@ class Login extends Component {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(this.getProcessedFieldData(e.currentTarget[0].value, e.currentTarget[1].value))
     }).then(response => response.json())
     .then(responseJson => {
       localStorage.setItem("accessToken",
