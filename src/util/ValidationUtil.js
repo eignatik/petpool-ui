@@ -31,7 +31,7 @@ export class ValidationUtil {
   }
 
   static checkEmailIsValid(value) {
-    return !/^[A-Z0-9._%+-]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/.test(value);
+    return !/^[A-Za-z0-9._%+-]{1,64}@(?:[A-Za-z0-9-]{1,63}\.){1,125}[A-Za-z]{2,63}$/.test(value);
   }
 
   static checkElementsIsMatched(value, original) {
