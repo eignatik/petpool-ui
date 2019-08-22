@@ -1,4 +1,5 @@
 import {RestUtil} from "./RestUtil";
+import isemail from 'isemail';
 
 const LOGIN = "login";
 const EMAIL = "email";
@@ -31,7 +32,7 @@ export class ValidationUtil {
   }
 
   static checkEmailIsValid(value) {
-    return !/^[A-Za-z0-9._%+-]{1,64}@(?:[A-Za-z0-9-]{1,63}\.){1,125}[A-Za-z]{2,63}$/.test(value);
+    return !isemail.validate(value);
   }
 
   static checkElementsIsMatched(value, original) {
