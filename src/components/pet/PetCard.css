@@ -1,14 +1,20 @@
 
-.ui.items>.item.pet-card>image {
-  width: 5em !important;
-  height: 5em !important;
+.ui.items>.item.pet-card>.image {
+  width: 80px !important;
+  height: 80px !important;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.ui.items>.item.pet-card>.image>img {
+  background-size: contain;
+  width: 90px !important;
+  height: 90px !important;
 }
 
 .ui.items>.item.pet-card>.image>img.image-empty {
-  background: url('../../assets/images/no-image.png') 100% 100% no-repeat;
-  background-size: cover;
-  width: 5em !important;
-  height: 5em !important;
+  background: url('../../assets/images/no-image.png');
+  background-size: 80px;
 }
 
 .ui.items>.item.pet-card {
@@ -80,4 +86,5 @@
 .pet-card-content-right>.header {
   font-weight: bold;
   font-size: 1.2em;
+  text-transform: uppercase;
 }
