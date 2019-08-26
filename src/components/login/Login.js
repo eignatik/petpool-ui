@@ -17,10 +17,17 @@ class Login extends Component {
   constructor() {
     super();
     this.state = {
+      isEmail: false,
       error: {}
     };
     this.logIn = this.logIn.bind(this);
     this.getProcessedFieldData = this.getProcessedFieldData.bind(this);
+    this.handleLoginChange = this.handleLoginChange.bind(this);
+  }
+
+  handleLoginChange(event) {
+      let value = event.target.value;
+      this.setState({isEmail: /@/.test(value)});
   }
 
   getError() {
@@ -107,8 +114,8 @@ class Login extends Component {
                   <Form.Group widths={'equal'}>
                     <Form.Field required='true'>
                       <Input iconPosition='left' placeholder='Email or login'>
-                        <Icon name='at'/>
-                        <input/>
+                        <Icon name={this.state.isEmail ? 'at' : 'user'} />
+                        <input onChange={this.handleLoginChange}/>
                       </Input>
                     </Form.Field>
                   </Form.Group>
