@@ -70,7 +70,7 @@ class Login extends Component {
     .then((errorPresent) => {
       console.log(errorPresent);
       if (!errorPresent) {
-        RestUtil.redirect("/dashboard");
+        RestUtil.redirect("/");
       } else {
         this.setState({
           error: errorPresent
