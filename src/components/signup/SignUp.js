@@ -138,10 +138,10 @@ class SignUp extends Component {
         }
         break;
       case EMAIL:
-        let emailIsIsValid = ValidationUtil.checkEmailIsValid(value);
-        errors[name].emailHasError = emailIsIsValid;
+        let emailIsInValid = !ValidationUtil.checkEmailIsValid(value);
+        errors[name].emailHasError = emailIsInValid;
 
-        if(!isEmpty && !emailIsIsValid) {
+        if(!isEmpty && !emailIsInValid) {
           ValidationUtil.checkUniqueByEmail(value, result => this.setError(name, result));
         }
         break;
@@ -177,7 +177,7 @@ class SignUp extends Component {
   hasFormError() {
     let validations = [ValidationUtil.checkElementIsEmpty(this.state.person.userName), ValidationUtil.checkElementIsEmpty(this.state.person.email),
       ValidationUtil.checkElementIsEmpty(this.state.person.firstName), ValidationUtil.checkElementIsEmpty(this.state.person.lastName),
-      ValidationUtil.checkElementIsEmpty(this.state.person.city), ValidationUtil.checkEmailIsValid(this.state.person.email),
+      ValidationUtil.checkElementIsEmpty(this.state.person.city), !ValidationUtil.checkEmailIsValid(this.state.person.email),
       ValidationUtil.checkElementIsEmpty(this.state.person.password), ValidationUtil.checkElementIsEmpty(this.state.person.confirmedPassword),
       ValidationUtil.checkElementsIsMatched(this.state.person.password, this.state.person.confirmedPassword),
       ValidationUtil.checkUserNameIsTooShort(this.state.person.userName), ValidationUtil.checkUserNameIsTooLong(this.state.person.userName),

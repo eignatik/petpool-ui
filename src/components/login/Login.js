@@ -10,15 +10,24 @@ import {
 } from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import {RestUtil} from "../../util/RestUtil";
+import {ValidationUtil} from "../../util/ValidationUtil";
 
 class Login extends Component {
 
   constructor() {
     super();
     this.state = {
+      isEmail: false,
       error: {}
     };
     this.logIn = this.logIn.bind(this);
+    this.getProcessedFieldData = this.getProcessedFieldData.bind(this);
+    this.handleLoginChange = this.handleLoginChange.bind(this);
+  }
+
+  handleLoginChange(event) {
+      let value = event.target.value;
+      this.setState({isEmail: ValidationUtil.checkEmailIsValid(value)});
   }
 
   getError() {
@@ -43,13 +52,24 @@ class Login extends Component {
     return null;
   }
 
+  getProcessedFieldData(login, password) {
+      if(ValidationUtil.checkEmailIsValid(login)) {
+          return {
+              email: login,
+              name: '',
+              password: password
+          }
+      } else {
+          return {
+              email: '',
+              name: login,
+              password: password
+          }
+      }
+  }
+
   logIn(e) {
     e.preventDefault();
-
-    const data = {
-      email: e.currentTarget[0].value,
-      password: e.currentTarget[1].value
-    };
 
     fetch(RestUtil.url("token/request"), {
       method: "POST",
@@ -57,7 +77,7 @@ class Login extends Component {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(this.getProcessedFieldData(e.currentTarget[0].value, e.currentTarget[1].value))
     }).then(response => response.json())
     .then(responseJson => {
       localStorage.setItem("accessToken",
@@ -94,8 +114,8 @@ class Login extends Component {
                   <Form.Group widths={'equal'}>
                     <Form.Field required='true'>
                       <Input iconPosition='left' placeholder='Email or login'>
-                        <Icon name='at'/>
-                        <input/>
+                        <Icon name={this.state.isEmail ? 'at' : 'user'} />
+                        <input onChange={this.handleLoginChange}/>
                       </Input>
                     </Form.Field>
                   </Form.Group>
