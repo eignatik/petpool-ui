@@ -32,7 +32,7 @@ export class ValidationUtil {
   }
 
   static checkEmailIsValid(value) {
-    return !isemail.validate(value);
+    return isemail.validate(value);
   }
 
   static checkElementsIsMatched(value, original) {

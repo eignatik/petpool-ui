@@ -10,7 +10,7 @@ import {
 } from "semantic-ui-react";
 import {Link} from "react-router-dom";
 import {RestUtil} from "../../util/RestUtil";
-import {EMAIL_REGEX} from '../../util/Constants';
+import {ValidationUtil} from "../../util/ValidationUtil";
 
 class Login extends Component {
 
@@ -27,7 +27,7 @@ class Login extends Component {
 
   handleLoginChange(event) {
       let value = event.target.value;
-      this.setState({isEmail: /@/.test(value)});
+      this.setState({isEmail: ValidationUtil.checkEmailIsValid(value)});
   }
 
   getError() {
@@ -53,7 +53,7 @@ class Login extends Component {
   }
 
   getProcessedFieldData(login, password) {
-      if(login.match(EMAIL_REGEX)) {
+      if(ValidationUtil.checkEmailIsValid(login)) {
           return {
               email: login,
               name: '',
